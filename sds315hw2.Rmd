@@ -78,12 +78,11 @@ Yes, because with a clear salary (continuous variable) cutoff, you would then be
 
 The running variable would be income, with the cutoff being an annual salary of 500,000 Cuban pesos.
 
-There must be an assumption that people near the threshold will not willfully alter or represent their salaries. 
+There must be an assumption that people near the threshold will not willfully alter or represent their salaries.
 
 ##### (iv) Is the original Mariel Boatlift scenario (as described in the preamble) a Difference-in-Differences design? Define the treatment and control groups. Explain the Parallel Trends Assumption in this context: if we observe that Miami and a control city (e.g., Atlanta) were moving in tandem before 1980, why is that necessary for our post-1980 conclusions to be valid?
 
-The the natural experiement in the first example would be a difference-in-difference design. 
-In the first example the treatment group would be the labor force of miami, which is effected by immigration and another control city not affect by the same cuban immigration.
+The the natural experiement in the first example would be a difference-in-difference design. In the first example the treatment group would be the labor force of miami, which is effected by immigration and another control city not affect by the same cuban immigration.
 
 Because it establishes that there is less of a likelihood that any change in the labor force was caused by other confounding variables.
 
@@ -95,11 +94,28 @@ As you leave the latest SDS 315 lecture, you spot a familiar black trench coat i
 
 ##### (i) Assume that the CIA did not already assign treatment (who gets the experimental drug and who gets the placebo). Would you use blocking to assign treatment? If so, why and how?
 
+I would block as much as possible the people with variables that affect sleep. At least I would block by amount of sleep, then additionally by amount of physical activity or caffeine use. I would then randomly assign individuals between the drug and placebo from each block.
+
+The blocking helps to minimize the chance that confounding variables effect the results of the data, particularly how amount of sleep, physical activity, and coffee usage could effect rem-sleep.
+
 ##### (ii) Now, assume that the CIA already assigned treatments. You question whether the assignments were truly random. How might you use matching to improve your analysis? Explain which characteristics you would consider when matching.
+
+To match, I would find the individuals that have a similar sets of variables, and match them into groups, and then compare their results between the rem drug and placebo
+
+I would try to primarily match individuals by amount of sleep, coffee use, and physical activity, because they will probably have the biggest impact on sleep.
 
 ##### (iii) What is the difference between potentially blocking in (i) and matching in (ii)?
 
+Blocking is usually done before an experiment, to minimize the effect of confounding variables
+
+Matching can be done before and after, and involves comparing individuals by similar variables, to better see affect in similar circumstances of individuals, and to potentially better see the effect of a confounding variable.
+
 ##### (iv) Are there any potential confounders that the CIA forgot to record that may impact REM sleep? If so, list three you can think of.
+
+1.  Time of day they go to sleep and wake up.
+2.  Age (pretty sure rem sleep changes with age)
+3.  medication use that effects sleep (melatonin)
+4.  Energy drinks, if they live in the city (disturbances at night)
 
 # Question 4 - Observational Studies
 
