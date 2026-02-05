@@ -1,6 +1,6 @@
 ---
 title: "SDS 315 - Homework 2"
-author: "(Group Number: Student Names)"
+author: "(Group 11: Victoria Do, Marcelle Crochet, Jonathan Lesser)"
 date: "2026-01-30"
 output:
   html_document: default
@@ -23,36 +23,42 @@ This homework should be submitted using a .Rmd file and .pdf/.html file. Show al
 
 The National Institutes of Health (NIH) want to randomly sample individuals for a new health survey. They select Americans to participate in their survey by calling random US phone numbers. Initially, they planned to obtain random numbers from a large relic of the past, known as a telephone directory. However, they have decided to join the 21st century and enlist you in obtaining random US numbers using R. You are told that four constraints exist for US phone numbers:
 
-1)  The first number cannot be one or zero.
-2)  The second number cannot be nine.
-3)  The second and third number cannot *both* be one. (However, the second number OR the third number can be one.)
-4)  The fourth number cannot be one or zero.
+1) The first number cannot be one or zero.
+2) The second number cannot be nine.
+3) The second and third number cannot *both* be one. (However, the second number OR the third number can be one.)
+4) The fourth number cannot be one or zero.
 
 Recall that U.S. phone numbers are ten digits in the format XXX-XXX-XXXX, where X denotes an Arabic numerical that abides by the four constraints. Generate 10 US phone numbers for the NIH using R's `sample()` function. Show your code.
 
 ```{r}
-storednumbers <- character(10)
-x <- 0:9
+phone_number <- function() {
+  n1 <- sample(2:9, 1)
+  n2 <- sample(0:8, 1)
+  n3 <- sample(0:9, 1)
+  while (n2 == 1 & n3 == 1) {
+    n3 <- sample(0:9, 1)
+  }
+  
+  n4 <- sample(2:9, 1)
+  n5 <- sample(0:9, 1)
+  n6 <- sample(0:9, 1)
+  n7 <- sample(0:9, 1)
+  n8 <- sample(0:9, 1)
+  n9 <- sample(0:9, 1)
+  n10 <- sample(0:9, 1)
+  
+  paste0(n1, n2, n3, "-", n4, n5, n6, "-", n7, n8, n9, n10)
+}
 
+printNumbers = c()
 for (i in 1:10) {
-  repeat {
-  numbers <- sample(x, 10, replace = TRUE, prob = NULL)
-  if (numbers[1] != 1) {
-    if (numbers[1] !=0) {
-      if (numbers[2] != 9){ 
-        if (numbers[2] && numbers[3] != 1) {
-          if (numbers[4] != 1) {
-            if (numbers[4] != 0) {
-  storednumbers[i] <- paste0(numbers[1], numbers[2], numbers[3], "-", numbers[4], numbers[5], numbers[6], "-", numbers[7], numbers[8], numbers[9], numbers[10])
-  break
-}}}}}}}}
-print(storednumbers)
+  printNumbers=c(printNumbers, phone_number())
+}
+  
+printNumbers
 
-#sources used:
-#https://sparkbyexamples.com/r-programming/explain-paste0-function-in-r-with-examples/
-#https://rstudio-education.github.io/hopr/loops.html#repeat-loops 
-#https://www.geeksforgeeks.org/r-language/r-repeat-loop/ 
 ```
+
 
 # Question 2 - Cuban Migration
 
@@ -60,62 +66,47 @@ Suppose that we are interested in analyzing the impact that migrants have on the
 
 ##### (i) Suppose you have data on Miami’s population and labor shortage metrics for the periods immediately before and after the Mariel boatlift. Why is comparing Miami’s data "before vs. after" insufficient to establish a causal effect? How could you use data from other similar cities (a control group) to better isolate the impact of the migrants?
 
-Because it doesn't take into account confounding variables that may have effected the labor force at the same time
-
-By picking another similar U.S. city that did not have a spike in Cuban immigration at the same time, you can compare it with Miami as a control group to ensure the change in the U.S. labor force was not a coincidence, and was not caused by some other event.
+### It's insufficient to establish a causal effect because there could've been confounding variable that interfered with Miami's labor force, such as macroeconomic trends across the whole country, seasonal effects, labor policy chances, etc. To isolate the impact of the migrants, we can compare Miami to similar cities that were not exposed to the Cuban migration and use their data as a baseline for what would've happened to Miami without the Cuban migration.
 
 ##### (ii) What specific type of experiment is this? Distinguish between a Randomized Controlled Trial (RCT) and this scenario. Why is the "as-if" random nature of Castro’s sudden policy change crucial for researchers?
 
-This type of experiment is a natural experiment.
+### This is a natural experiment. An RCT is when a researcher randomly assigns a treatment to subjects, while in this scenario, there is no intentional 'treatment' assigned to the city of Miami because the Cuban migration happens due to an external event (Castro's announcement). The "as-if" random nature of Castro's sudden policy change is crucial for researchers because it makes the Cuban migration plausibly unrelated to Miami's existing labor trends (it helps establish a causal relationship).
 
-While an RTC controls the sampling, blocking, and assignment and defines variables, a natural experiment relies on real world events that cannot be controlled.
-
-Because it would unethical/costly for the researchers to replicate a study that could have similar impact on the labor force, even if the information is valuable.
 
 ##### (iii) Suppose the policy changed: only Cubans with an annual salary below 500,000 Cuban pesos were permitted to emigrate. If we want to study the impact of this migration on the salaries of those who moved, would this be an example of a Regression Discontinuity Design? If so, identify the running variable (forcing variable) and the cutoff. What assumption must hold regarding the behavior of individuals near that 500,000-peso threshold?
 
-Yes, because with a clear salary (continuous variable) cutoff, you would then be comparing salaries between those that stayed and those that moved to establish a causal relationship.
-
-The running variable would be income, with the cutoff being an annual salary of 500,000 Cuban pesos.
-
-There must be an assumption that people near the threshold will not willfully alter or represent their salaries.
+### Yes, this is an example of a Regression Discontinuity Design. The running variable is the annual Cuban salary, and the cutoff is 500,000 pesos. The assumption is that since people can't exactly manipulate their salary, people slightly above and slightly below the cutoff must be comparable.
 
 ##### (iv) Is the original Mariel Boatlift scenario (as described in the preamble) a Difference-in-Differences design? Define the treatment and control groups. Explain the Parallel Trends Assumption in this context: if we observe that Miami and a control city (e.g., Atlanta) were moving in tandem before 1980, why is that necessary for our post-1980 conclusions to be valid?
 
-The the natural experiement in the first example would be a difference-in-difference design. In the first example the treatment group would be the labor force of miami, which is effected by immigration and another control city not affect by the same cuban immigration.
-
-Because it establishes that there is less of a likelihood that any change in the labor force was caused by other confounding variables.
+Yes, the original Mariel Boatlift scenario is a Difference-in-Differences design. The treatment group is Miami, while the control groups are the cities that are similar to Miami. Miami and a control city being in tandem until 1980 is necessary for our conclusions to be valid because if both Miami and the control city have similar labor force conditions before 1980, then the post-1980 changes in Miami's labor force can be attributed to the Cuban migration rather than pre-existing/outside circumstances.
 
 If you're interested, here's an article on the [Mariel Boatlift](https://www.history.com/this-day-in-history/castro-announces-mariel-boatlift).
+
+
 
 # Question 3 - The CIA Returns
 
 As you leave the latest SDS 315 lecture, you spot a familiar black trench coat in the corner of your eye. It approaches you, hands you a new manila envelope, and floats away. You open it to find a new causal inference mission: "We need your help to determine if an experimental drug improves REM sleep. We have gathered 50 individuals for use in your study. Each individual will receive the experimental drug or a placebo. We have collected the following characteristics about each individual: average amount of sleep, average amount of physical activity, whether they drink coffee, whether they like romantic-comedy movies, and whether they play Dungeons and Dragons."
 
-##### (i) Assume that the CIA did not already assign treatment (who gets the experimental drug and who gets the placebo). Would you use blocking to assign treatment? If so, why and how?
+##### (i)  Assume that the CIA did not already assign treatment (who gets the experimental drug and who gets the placebo). Would you use blocking to assign treatment? If so, why and how?
 
-I would block as much as possible the people with variables that affect sleep. At least I would block by amount of sleep, then additionally by amount of physical activity or caffeine use. I would then randomly assign individuals between the drug and placebo from each block.
+### Yes, I would use blocking to assign treatment. I would block based on the following pre-treatment characteristics because they are related to REM sleep: average sleep, average physical activity, coffee consumption. Within each block, I would randomly assign the drug or placebo to balance those pre-treatment characteristics.
 
-The blocking helps to minimize the chance that confounding variables effect the results of the data, particularly how amount of sleep, physical activity, and coffee usage could effect rem-sleep.
 
 ##### (ii) Now, assume that the CIA already assigned treatments. You question whether the assignments were truly random. How might you use matching to improve your analysis? Explain which characteristics you would consider when matching.
 
-To match, I would find the individuals that have a similar sets of variables, and match them into groups, and then compare their results between the rem drug and placebo
+### If the treatment wasn't truly random, matching would help correct any imbalances within the treatment groups. To use matching to improve my analysis, I would match individuals based on their baseline amount of sleep, their baseline physical activity, and their baseline coffee consumption (not using the rom-coms and D&D because they would probably be weak indicators of REM sleep).
 
-I would try to primarily match individuals by amount of sleep, coffee use, and physical activity, because they will probably have the biggest impact on sleep.
 
-##### (iii) What is the difference between potentially blocking in (i) and matching in (ii)?
+##### (iii) What is the difference between potentially blocking in (i) and matching in (ii)? 
 
-Blocking is usually done before an experiment, to minimize the effect of confounding variables
-
-Matching can be done before and after, and involves comparing individuals by similar variables, to better see affect in similar circumstances of individuals, and to potentially better see the effect of a confounding variable.
+### Blocking is done before the treatment assignment (prevention) while matching is done after the treatment assignment (correction).
 
 ##### (iv) Are there any potential confounders that the CIA forgot to record that may impact REM sleep? If so, list three you can think of.
 
-1.  Time of day they go to sleep and wake up.
-2.  Age (pretty sure rem sleep changes with age)
-3.  medication use that effects sleep (melatonin)
-4.  Energy drinks, if they live in the city (disturbances at night)
+### Yes, there are other potential confounders, such as stress/anxiety/mental conditions, certain medication usage, and alcohol consumption.
+
 
 # Question 4 - Observational Studies
 
@@ -123,14 +114,19 @@ Describe each of the following observational studies as "cross-sectional" or "lo
 
 ##### (i) A football coach just formed a new team and wants to know what makes his players perform optimally. Every game, he asks his players how they slept, what they ate for breakfast, and what music they listened to before the game. Additionally, he rates their performance after each game.
 
+### This study is longitudinal and prospective because the same players are observed repeatedly on a current timeline. The defining characteristic of the cohort is they are members of the football team.
+
+
 ##### (ii) A waiter wants to know how much the average customer tips him. Every night, he records the tip amount from five customers. In this particular restaurant, assume that no customers return after their first visit.
+
+### This study is cross-sectional and descriptive because there are new customers every night (no repeats), and the waiter is only estimating an average of his tips.
+
 
 ##### (iii) A street magician wants to know which passing strangers will be most interested in watching her perform. Every Tuesday night, she collects the following data for seven strangers: what shoes they're wearing, whether they are briskly walking, if they just happen to pull their phone out upon seeing her, whether they're alone, and their perceived age. Upon inviting these strangers to watch her perform, she records their response. Assume that no strangers are repeatedly sampled.
 
+### This study is cross-sectional and analytical because there is only a one-time observation of the strangers, and the magician is analyzing for predictors of strangers that will stop for her.
+
+
 ##### (iv) Daenerys Targaryen wants to know how many people in Westeros now hate her. Now that the show has concluded, she gathered a random group of 100 individuals and asked them to rate her likeability throughout every episode of Game of Thrones. She also records the family bloodline, whether they belong to a house, and their view on dragons as the show progressed.
 
-# Question 5 - The Basic Mantra of Good Experimental Design
-
-For the rest of the semester, chant the basic mantra of good experimental design for five minutes twice a day:
-
-"Randomize, randomize, randomize! Control, control, control! Block, block, block!"
+### This study is longitudinal and retrospective because the data is collected after the show has ended (looking backward over time). The cohort is the individuals who watched the full series.
