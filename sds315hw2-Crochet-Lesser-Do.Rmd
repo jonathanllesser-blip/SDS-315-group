@@ -41,6 +41,7 @@ Generate 10 US phone numbers for the NIH using R's `sample()` function.
 Show your code.
 
 ```{r}
+set.seed(123)
 
 numbers <- function() {
   repeat {
@@ -59,6 +60,42 @@ final
   
 ```
 
+```{r}
+
+digit = function() {
+  repeat {
+  digit1 = sample(2:9, 1)
+  digit2 = sample(1:8, 1)
+  digit3 = sample(0:9, 1)
+  if
+  
+    (!(digit2 == 1 && digit3 ==1))
+    break
+  }
+  digit4 = sample(2:9, 1)
+  digit5 = sample(0:9, 1)
+  digit6 = sample(0:9, 1)
+  digit7 = sample(0:9, 1)
+  digit8 = sample(0:9, 1)
+  digit9 = sample(0:9, 1)
+  digit10 = sample(0:9, 1)
+   
+  paste0(digit1, digit2, digit3, "-", digit4, digit5, digit6, "-", digit7, digit8, digit9, digit10)
+  
+}
+
+digit()
+digit()
+digit()
+digit()
+digit()
+digit()
+digit()
+digit()
+digit()
+digit()
+```
+
 # Question 2 - Cuban Migration
 
 Suppose that we are interested in analyzing the impact that migrants have on the US labor force.
@@ -68,25 +105,26 @@ For the sake of this problem, assume that the U.S. government accepted all Cuban
 
 ##### (i) Suppose you have data on Miami’s population and labor shortage metrics for the periods immediately before and after the Mariel boatlift. Why is comparing Miami’s data "before vs. after" insufficient to establish a causal effect? How could you use data from other similar cities (a control group) to better isolate the impact of the migrants?
 
-Comparing Miami's data from before and after the boatlift is insufficient because we are not taking into account any other confounders such as the economy, business cycles, or even weather.
-We could use data from similar cities such as cities that also rhave a similar availablility in the labor market becfore the but did not recieve an influx in Cuban immigrants (control).
-You then could compare the cities before and after the influx of Cuban immigration using diff-in-diff design, possibly looking at labor market growth/decline.
+We cannot establish a causal effect because we are not comparing a treatment group to a control group.
+We could use data from similar cities, such as cities that also have a similar availablility in the labor market before the boatlift but did not receive an influx in Cuban immigrants (control).
+You then could compare the cities before and after the influx of Cuban immigration using diff-in-diff design.
+
+We are also not taking into account confounders within each city that could affect the amount of Cuban immigrants.
 
 ##### (ii) What specific type of experiment is this? Distinguish between a Randomized Controlled Trial (RCT) and this scenario. Why is the "as-if" random nature of Castro’s sudden policy change crucial for researchers?
 
 The specific type of experiment is a quasi-natural experiment.
 The experiment has a control group (other similar city), treatment group (Miami), and a randomization mechanism (Castro's sudden policy change).
-Nature had done the randomization for the researchers, without their input and resembles a random assignment (although it is not truly random like a real experiment).
+Nature had done the randomization for the researchers, without their input and resembles a random assignment (although it is not truly random).
 The as-if random nature of Castro's policy change is that it makes the sudden influx of migration into the US not related to factors within Miami.
 Now the treatment results are seen as independent from any factors in Miami.
-This natural experiments treatment is the immigrant inflow triggered from political shock in Cuba.
 An RCT would require the researchers to intentionally carry out randomization, intentionally create a control and treatment group.
-Each subject would have an equal probability for being picked for the treatment.
+Each subject would have an equal probability of being picked for the treatment.
 
 ##### (iii) Suppose the policy changed: only Cubans with an annual salary below 500,000 Cuban pesos were permitted to emigrate. If we want to study the impact of this migration on the salaries of those who moved, would this be an example of a Regression Discontinuity Design? If so, identify the running variable (forcing variable) and the cutoff. What assumption must hold regarding the behavior of individuals near that 500,000-peso threshold?
 
 This would be an example of a Regression Discontinuity Design as the treatment groups fall on either side of a threshold in the running variable (the annual salary of 500,000 Cuban pesos), making those just above and below the cutoff comparable.
-The running variable would be the annual salary in Cuban pesos, the cut-off being 500,000 Cuban pesos, as those who have an annual salary below this number will be permitted to emigrate.
+The running variable would be the annual salary in Cuban pesos, the cut-off being 500,000 Cuban pesos, as those who have an annual salary below this number will be permitted to immigrate.
 The assumption that must hold regarding the behavior of the individuals near the 500,000 peso threshold is that all the subjects around this threshold are extremely similar except for their treatment status, as it is considered almost random whether they are slightly above or below that line.
 
 ##### (iv) Is the original Mariel Boatlift scenario (as described in the preamble) a Difference-in-Differences design? Define the treatment and control groups. Explain the Parallel Trends Assumption in this context: if we observe that Miami and a control city (e.g., Atlanta) were moving in tandem before 1980, why is that necessary for our post-1980 conclusions to be valid?
@@ -108,15 +146,17 @@ You open it to find a new causal inference mission: "We need your help to determ
 
 I would block the participants because of the small sample size and the treatment not being pre-assigned, which can lead to an imbalance in results.
 Long sleepers may end up in the same group and completely skew the results.
-I would block the participants based on average amount of sleep, average amount of physical activity, and whether they drink coffee.
+I would block the participants based on average amount of sleep, and I could also block based on other factors that affect sleep, such as coffee intake and physical activity.
 Average amount of sleep is strongly associated with REM sleep, physical activity is tied to quality of sleep and REM, and caffeine can often affect the quality and REM cycles.
 Romantic comedy movies and liking dungeon and dragons likely has no effect on REM sleep.
 
 I would block based on average sleep: low, medium, high
 
-Coffee Drinking: yes, no
+If I was blocking based on coffee drinking: yes, no
 
-Physical activity: low, high I them would randomize treatment within each block.
+If I was blocking based on physical activity: low, high
+
+I would then randomize treatment within each block.
 
 ##### (ii) Now, assume that the CIA already assigned treatments. You question whether the assignments were truly random. How might you use matching to improve your analysis? Explain which characteristics you would consider when matching.
 
@@ -147,6 +187,7 @@ For longitudinal studies, explain whether it is retrospective or prospective, an
 
 This is a longitudinal study because the researcher continually observes the same subjects over an extended period of time to track changes and make observations.
 This is a prospective longitudinal study because the researcher is moving forward to track new changes, trends, and outcomes.
+The defining characteristic of the cohort is the members of the football team.
 
 ##### (ii) A waiter wants to know how much the average customer tips him. Every night, he records the tip amount from five customers. In this particular restaurant, assume that no customers return after their first visit.
 
@@ -165,6 +206,7 @@ This is an analytical study because the magician is trying to understand and fig
 This is a longitudinal study because Daenerys is observing the opinions of subjects throughout every episode of Game of Thrones.
 Daenerys is tracking changing and observing the data.
 It is a retrospective study because the show has concluded, and she is asking participants to look back on the episodes and rate them, rather than rating the show as it is coming out.
+The defining characteristic of the cohort is that they watched the full series, Game of Thrones.
 
 # Question 5 - The Basic Mantra of Good Experimental Design
 
