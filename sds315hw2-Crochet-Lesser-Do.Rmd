@@ -1,0 +1,173 @@
+---
+title: "SDS 315 - Homework 2"
+author: "(Group Number: Marcelle Crochet, Victoria Do, Jonathan Lesser)"
+date: "2026-01-30"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+opts_chunk$set(tidy.opts=list(width.cutoff=40),tidy=TRUE)
+library(ggplot2)
+library(tidyverse)
+library(ggpubr)
+```
+
+This homework should be submitted using a .Rmd file and .pdf/.html file.
+Show all of your code.
+
+# Question 1 - Telephone Book
+
+The National Institutes of Health (NIH) want to randomly sample individuals for a new health survey.
+They select Americans to participate in their survey by calling random US phone numbers.
+Initially, they planned to obtain random numbers from a large relic of the past, known as a telephone directory.
+However, they have decided to join the 21st century and enlist you in obtaining random US numbers using R.
+You are told that four constraints exist for US phone numbers:
+
+1)  The first number cannot be one or zero.
+2)  The second number cannot be nine.
+3)  The second and third number cannot *both* be one. (However, the second number OR the third number can be one.)
+4)  The fourth number cannot be one or zero.
+
+Recall that U.S. phone numbers are ten digits in the format XXX-XXX-XXXX, where X denotes an Arabic numerical that abides by the four constraints.
+Generate 10 US phone numbers for the NIH using R's `sample()` function.
+Show your code.
+
+```{r}
+
+numbers <- function() {
+  repeat {
+    x <- sample(0:9, 10, replace = TRUE)
+    if (x[1] %in% c(0,1)) next
+    if (x[2] %in% c(9)) next
+    if (x[2] == 1 && x[3] == 1) next
+    if (x[4] %in% c(0,1)) next
+    
+    return(paste(x, collapse=""))
+  }
+}
+
+final <- replicate(10, numbers())
+final
+  
+```
+
+# Question 2 - Cuban Migration
+
+Suppose that we are interested in analyzing the impact that migrants have on the US labor force.
+It is unethical to create forced migration to study such a phenomena.
+However, on April 20, 1980, Fidel Castro and his regime announced that any Cubans that want to emigrate from Cuba to the U.S. are free to board boats at the port of Mariel, Cuba; the Cubans would end up in Miami within 24 hours.
+For the sake of this problem, assume that the U.S. government accepted all Cuban immigrants and allowed them to work in their labor force.
+
+##### (i) Suppose you have data on Miami’s population and labor shortage metrics for the periods immediately before and after the Mariel boatlift. Why is comparing Miami’s data "before vs. after" insufficient to establish a causal effect? How could you use data from other similar cities (a control group) to better isolate the impact of the migrants?
+
+Comparing Miami's data from before and after the boatlift is insufficient because we are not taking into account any other confounders such as the economy, business cycles, or even weather.
+We could use data from similar cities such as cities that also rhave a similar availablility in the labor market becfore the but did not recieve an influx in Cuban immigrants (control).
+You then could compare the cities before and after the influx of Cuban immigration using diff-in-diff design, possibly looking at labor market growth/decline.
+
+##### (ii) What specific type of experiment is this? Distinguish between a Randomized Controlled Trial (RCT) and this scenario. Why is the "as-if" random nature of Castro’s sudden policy change crucial for researchers?
+
+The specific type of experiment is a quasi-natural experiment.
+The experiment has a control group (other similar city), treatment group (Miami), and a randomization mechanism (Castro's sudden policy change).
+Nature had done the randomization for the researchers, without their input and resembles a random assignment (although it is not truly random like a real experiment).
+The as-if random nature of Castro's policy change is that it makes the sudden influx of migration into the US not related to factors within Miami.
+Now the treatment results are seen as independent from any factors in Miami.
+This natural experiments treatment is the immigrant inflow triggered from political shock in Cuba.
+An RCT would require the researchers to intentionally carry out randomization, intentionally create a control and treatment group.
+Each subject would have an equal probability for being picked for the treatment.
+
+##### (iii) Suppose the policy changed: only Cubans with an annual salary below 500,000 Cuban pesos were permitted to emigrate. If we want to study the impact of this migration on the salaries of those who moved, would this be an example of a Regression Discontinuity Design? If so, identify the running variable (forcing variable) and the cutoff. What assumption must hold regarding the behavior of individuals near that 500,000-peso threshold?
+
+This would be an example of a Regression Discontinuity Design as the treatment groups fall on either side of a threshold in the running variable (the annual salary of 500,000 Cuban pesos), making those just above and below the cutoff comparable.
+The running variable would be the annual salary in Cuban pesos, the cut-off being 500,000 Cuban pesos, as those who have an annual salary below this number will be permitted to emigrate.
+The assumption that must hold regarding the behavior of the individuals near the 500,000 peso threshold is that all the subjects around this threshold are extremely similar except for their treatment status, as it is considered almost random whether they are slightly above or below that line.
+
+##### (iv) Is the original Mariel Boatlift scenario (as described in the preamble) a Difference-in-Differences design? Define the treatment and control groups. Explain the Parallel Trends Assumption in this context: if we observe that Miami and a control city (e.g., Atlanta) were moving in tandem before 1980, why is that necessary for our post-1980 conclusions to be valid?
+
+ The original Mariel Boatlift scenario is a Difference-in-Differences design because there is a control group, treatment group, and there is a comparison between both groups after the treatment.
+The treatment was the influx of migration due to the Castro boatlift, the control group is a similar city to Miami in terms of labor, economy and location, but was not affected by the boatlift, and the treatment group is Miami.
+The Parallel Trends Assumption in this scenario is that if the treatment (the boatlift) had not occurred, the labor outcomes in Miami would have had the same trend as the control group (similar city unaffected by boatlift).
+It is assumed that if the boatlift had not happened, the trend of Miami's labor would have continued with its previous trend which is already mirrored by the control group, making them comparable.
+
+If you're interested, here's an article on the [Mariel Boatlift](https://www.history.com/this-day-in-history/castro-announces-mariel-boatlift).
+
+# Question 3 - The CIA Returns
+
+As you leave the latest SDS 315 lecture, you spot a familiar black trench coat in the corner of your eye.
+It approaches you, hands you a new manila envelope, and floats away.
+You open it to find a new causal inference mission: "We need your help to determine if an experimental drug improves REM sleep. We have gathered 50 individuals for use in your study. Each individual will receive the experimental drug or a placebo. We have collected the following characteristics about each individual: average amount of sleep, average amount of physical activity, whether they drink coffee, whether they like romantic-comedy movies, and whether they play Dungeons and Dragons."
+
+##### (i) Assume that the CIA did not already assign treatment (who gets the experimental drug and who gets the placebo). Would you use blocking to assign treatment? If so, why and how?
+
+I would block the participants because of the small sample size and the treatment not being pre-assigned, which can lead to an imbalance in results.
+Long sleepers may end up in the same group and completely skew the results.
+I would block the participants based on average amount of sleep, average amount of physical activity, and whether they drink coffee.
+Average amount of sleep is strongly associated with REM sleep, physical activity is tied to quality of sleep and REM, and caffeine can often affect the quality and REM cycles.
+Romantic comedy movies and liking dungeon and dragons likely has no effect on REM sleep.
+
+I would block based on average sleep: low, medium, high
+
+Coffee Drinking: yes, no
+
+Physical activity: low, high I them would randomize treatment within each block.
+
+##### (ii) Now, assume that the CIA already assigned treatments. You question whether the assignments were truly random. How might you use matching to improve your analysis? Explain which characteristics you would consider when matching.
+
+Matching would improve my analysis by making the control group and treatment group more comparable, rather than a small, randomly assigned control group and treatment group that may skew the results.
+This should reduce bias and make the effect of the drug more obvious and credible.
+I would consider matching the participants based on whether or not they drink coffee, their average amount of sleep, and their physical activity.
+
+##### (iii) What is the difference between potentially blocking in (i) and matching in (ii)?
+
+Blocking would help the structure of the study before it was carried out.
+It would help prevent accidental systematic bias by randomization between the participants and making sure the study is balanced from the start.
+
+Matching would help the analysis of the data.
+If the researchers are concerned that randomization may be a problem, they can correct that by matching the participant to analyze the data to compare.
+
+##### (iv) Are there any potential confounders that the CIA forgot to record that may impact REM sleep? If so, list three you can think of.
+
+Some confounders that the CIA may have forgotten to record is any medicine that may affect quality of sleep.
+Seasonal allergies can also lead to impermanent breathing-related sleep disorders that can cause subjects to have interrupted REM sleep.
+In addition, higher age can affect medical conditions that can lead to interrupted REM sleep that was not taken into account in the study.
+
+# Question 4 - Observational Studies
+
+Describe each of the following observational studies as "cross-sectional" or "longitudinal." For cross-sectional studies, explain whether it is descriptive or analytical.
+For longitudinal studies, explain whether it is retrospective or prospective, and explain the defining characteristic of the cohort.
+
+##### (i) A football coach just formed a new team and wants to know what makes his players perform optimally. Every game, he asks his players how they slept, what they ate for breakfast, and what music they listened to before the game. Additionally, he rates their performance after each game.
+
+This is a longitudinal study because the researcher continually observes the same subjects over an extended period of time to track changes and make observations.
+This is a prospective longitudinal study because the researcher is moving forward to track new changes, trends, and outcomes.
+
+##### (ii) A waiter wants to know how much the average customer tips him. Every night, he records the tip amount from five customers. In this particular restaurant, assume that no customers return after their first visit.
+
+This is a cross-sectional study because the researcher is taking points from a specific point in time and comparing them with other data collected from a point in time.
+In addition, none of the customers return, so you cannot compare specific subjects.
+This is a descriptive study because the researcher is seeking to find the average customer tip, and descriptive studies see a frequency of characteristic of a population, like the average tip amount.
+
+##### (iii) A street magician wants to know which passing strangers will be most interested in watching her perform. Every Tuesday night, she collects the following data for seven strangers: what shoes they're wearing, whether they are briskly walking, if they just happen to pull their phone out upon seeing her, whether they're alone, and their perceived age. Upon inviting these strangers to watch her perform, she records their response. Assume that no strangers are repeatedly sampled.
+
+This is a cross-sectional study because the researcher is taking points (the strangers) from a specific night, and comparing them with other strangers from another specific night.
+None of the strangers are repeated, and therefore, the magician cannot gather data on them for an extended period of time.
+This is an analytical study because the magician is trying to understand and figure out causation of interest when the strangers walk by.
+
+##### (iv) Daenerys Targaryen wants to know how many people in Westeros now hate her. Now that the show has concluded, she gathered a random group of 100 individuals and asked them to rate her likeability throughout every episode of Game of Thrones. She also records the family bloodline, whether they belong to a house, and their view on dragons as the show progressed.
+
+This is a longitudinal study because Daenerys is observing the opinions of subjects throughout every episode of Game of Thrones.
+Daenerys is tracking changing and observing the data.
+It is a retrospective study because the show has concluded, and she is asking participants to look back on the episodes and rate them, rather than rating the show as it is coming out.
+
+# Question 5 - The Basic Mantra of Good Experimental Design
+
+For the rest of the semester, chant the basic mantra of good experimental design for five minutes twice a day:
+
+"Randomize, randomize, randomize! Control, control, control! Block, block, block!"
