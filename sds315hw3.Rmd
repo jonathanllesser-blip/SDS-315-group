@@ -1,0 +1,108 @@
+---
+title: "SDS 315 - Homework 3"
+author: "(Group Number: Student Names)"
+date: "2026-02-14"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(mosaic)
+library(dplyr)
+```
+
+# Question 1 - Design a Cohort
+
+Answer the following three prompts. Assume that you have unlimited funds and can execute your study so long as it is ethical.
+
+1.  You are a doctor interested in determining exposures that increase the probability of developing type-II diabetes. Design a cohort study to determine exposures that increase the likelihood of developing this disease (You can refer to [this article](https://www.mayoclinic.org/diseases-conditions/type-2-diabetes/symptoms-causes/syc-20351193) for some background.)
+
+I would perform a prospective cohort study that records study habits p
+
+2.  You are a basketball scout and want to determine what factors to look for to ensure that you draft the next NBA superstar. Design a cohort study to determine which characteristics and attributes indicate an increased probability of finding the next league MVP. (Want to know how the NBA draft works? Check out [this article](https://www.nba.com/news/nba-draft-lottery-explainer).)
+
+I would preform a longitudinal and retrospective cohort study using the widely basketball statistics, and identify previous seasons players stats such shots-made percentages, and descriptors such as age, height, and weight, position.
+
+Using matching by position or age, we can observe the relationships of the variables of the players that makes the season leaders chart. These players would be the most likely to earn the MVP title.
+
+Then during the drafts we would rank our top picks by the variables most assostiated with the season leaders, to have the highest likelihood of drafting an MVP
+
+[NBA.com Draft section](https://www.nba.com/draft/2026)
+
+3.  You are an ecologist studying the fecundity of the endangered Dixie Valley Toad. Design a cohort study to determine which environmental features and attributes result in the largest amount of offspring. (What are Dixie Valley Toads? Check out these cute little guys [here](https://www.biologicaldiversity.org/species/amphibians/Dixie-Valley-toad/index.html).)
+
+# Question 2 - An Exploration of Uncertainty
+
+When testing statistical methods, it is a good idea to use simulated examples to determine if your methodology is working properly. In this problem, we will use a simulated example to estimate the mean of a normal distribution.
+
+#### (i) Simulate $N$ samples from a normal distribution with mean $\mu=5$ and standard deviation $\sigma=10$. For now, let $N=5$. Note: You can sample $N$ observations from a Normal($\mu$,$\sigma$) distribution using R's `rnorm(N,mu,sigma)`.
+
+```{r}
+rn
+```
+
+#### (ii) Using your random sample from (i), estimate $\mu$ by computing the mean of your sample ($\hat{\mu}$). Explain why your estimator $\hat{\mu}$ may be notably different than $\mu$.
+
+#### (iii) Repeat steps (i)-(ii) using the following values for $N$: 5, 10, 25, 100. For each value of $N$, compute the absolute difference between $\mu$ and your estimator $\hat{\mu}$. What do you notice as $N$ increases?
+
+#### (iv) Now, fix $N$ at $100$. Obtain $M=1000$ Monte Carlo simulations for $\hat{\mu}$ and plot your 1000 estimates in a histogram; in other words, obtain a sampling distribution for $\mu$. (Note: This should look like the histogram in lecture 8.) Finally, plot a vertical red line at the true value $\mu$. Explain your findings.
+
+#### (v) What is the standard error of your sampling distribution? What is an appropriate margin of error?
+
+#### (vi) Quantify the sampling variability of $\hat{\mu}$ in (iv) via the bootstrap method. Hint: To do this, draw one sample of size $N=100$ as in (iv) and fix this as the "true" sample. Take a large number, say $10000$, bootstrapped resamples from this "true" sample and recalculate $\hat{\mu}$ for each bootstrapped resample. Make a histogram of all $10000$ bootstrapped values of $\hat{\mu}$; in other words, obtain a bootstrapped sampling distribution for $\mu$. Plot a histogram of this bootstrapped sampling distribution.
+
+#### (vii) What is the standard error of your bootstrapped sampling distribution? Why might this be different than in (v)?
+
+# Question 3 - Flower Analysis
+
+A local florist believes that sepal lengths differ between different iris species. She enlists your statistical abilities to confirm or deny her hunch.
+
+#### (i) Filter R's `iris` data set to include only the setosa and versicolor species. Hint: Using the `dplyr` package, use `filter()` and `droplevels` to correctly eliminate the virginica species.
+
+```{r}
+library(datasets)
+data("iris")
+
+iris2 <- droplevels(filter(iris, Species != "virginica"))
+#iris2 only has setosa and versicolor
+```
+
+#### (ii) Obtain a bootstrapped sample of size $M=10000$ for the difference in means of sepal length between the setosa and versicolor species. Hint: Use R's `mosaic` library and the `do()` and `diffmean()` functions.
+
+```{r}
+library(mosaic)
+iris2 <- droplevels(filter(iris, Species != "virginica"))
+diffmean(Sepal.Length ~ Species, data=iris2 )
+
+#like example in slides
+bootirislengths = do(10000)*diffmean(Sepal.Length ~ Species,
+data=resample(iris2)) 
+
+```
+
+#### (iii) Plot a histogram of the bootstrap sampling distribution for the difference in mean sepal lengths between the setosa and versicolor species.
+
+```{r}
+library(ggplot2)
+irisggplot <- ggplot(bootirislengths)
+irisggplot + geom_histogram(aes(x=diffmean))
+```
+
+#### (iv) Obtain a 95% confidence interval for the mean differences in
+
+```{r}
+confint(bootirislengths, level = 0.95)
+#Interval is [0.759, 1.104]
+```
+
+#### (ii) at the 5% level of significance. What can we say about the difference in sepal lengths between the setosa and versicolor species?
+
+That within the 95% confidence interval, there is mean difference between the sepal lengths of 0.75 to 0.95 centimeters, with the estimated mean of the bootstrapped sample being a difference of 0.93 centimeters.
+
+#### (v) Convey your findings to the florist.
+
+Using a testing method that ensures the difference between petal lengths was not misrepresented, there is an average difference in petal lengths of about 0.93 centimeter between the setosa and versicolor species.
