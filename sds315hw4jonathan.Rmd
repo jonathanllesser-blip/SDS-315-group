@@ -1,0 +1,300 @@
+---
+title: "SDS 315 - Homework 4"
+author: "(Group Number: Student Names)"
+date: "2026-03-02"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+opts_chunk$set(tidy.opts=list(width.cutoff=40),tidy=TRUE)
+library(ggplot2)
+library(tidyverse)
+library(ggpubr)
+```
+
+This homework should be submitted using a .Rmd file and .pdf/.html file. Show all of your code.
+
+# Question 1 - Knock it off, Hank!
+
+You’ve been playing board games with some friends for a couple of hours now, and you notice that your friend Hank is rolling a “6” on his die perhaps more than usual. You suspect that Hank is cheating somehow. When you confront Hank about your suspicion, he vehemently denies the accusation. When you return home later that night, you decide to use your statistical knowledge to determine if Hank cheated. You recall that he rolled his die a total of 20 times and the “6” side showed up 5 times. You open up R and get ready to uncover Hank’s shenanigans.
+
+[Ideally, a die is fair only if all 6 sides have an equal chance 1/6 of showing up when rolled. For this problem, however, we will focus just on the 6's. So to test whether Hank cheated or not, we will investigate whether he got an unusually large number of 6's than what pure chance with a fair die may have resulted.]
+
+#### (i) Before you compute any numbers, you remember that you need to establish a null hypothesis. What is yours?
+
+The null hypothesis would be that the dices roles were truly random, and the friends roles cna be explained by blind luck
+
+#### (ii) What is your test statistic?
+
+The test statistic would be the number of sixes rolled by the friend. Test Statistic: 5/20
+
+#### (iii) Using R, simulate 20 rolls of a fair 6-sided die (each side has equiprobability of being shown). Plot a histogram of the sides that are shown.
+
+```{r}
+set.seed(1)
+rolls <-sample(6, 20, replace = TRUE)
+print(rolls)
+ggplot() + geom_histogram(aes(x=rolls ), binwidth = .5) + theme_linedraw()
+
+```
+
+#### (iv) Is the above histogram enough evidence to argue that Hank is cheating?
+
+No, the histogram by itself does not adequately provide evidence that would rule out the null hypothesis.
+
+#### (v) Repeat the simulation in (iii) 10,000 times. For each simulation, compute the percentage of occurrences of the “6” side. Then, plot the histogram of the percentages. Finally, add a vertical red line at your test statistic.
+
+```{r}
+#test statistic = 5/20
+
+set.seed(1)
+rep <- 10000
+sixes <- numeric(rep)
+for(ii in 1:rep)
+  sixes[ii] <- (mean(sample(1:6, 20, replace = TRUE) == 6))
+hist(sixes)
+abline(v = 0.25, lwd = 2, col = "red") 
+length(which(sixes >= 0.25)) / rep
+
+
+```
+
+#### (vi) Using your plot in (v), how can we calculate the p-value?
+
+```{r}
+# using lesson example
+length(which(sixes >= 0.25)) / rep
+```
+
+The p-value is 0.2345, implying strong-ish evidence against the null the hypothesis.
+
+#### (vii) How many simulations achieved 5 or more rolls of a "6"?
+
+```{r}
+sum(sixes >= .25)
+```
+
+#### (viii) Do you believe that Hank's die was unfair?
+
+While Hanks rolls were unlikely, comparing the 0.2345 p-value to a p-value of \>0.05 shows that the probabilities rolled by hank are unlikely to rule out the null hypothesis.
+
+# Question 2 - Spill the Tea
+
+You are excited to study *Camellia sinensis* for a summer internship abroad in West Bengal, India (which incidentally is where your instructor hails from). Your primary goal during this internship is to determine which of two fertilizers results in the largest yield (or, equivalently, the most weight). Suppose that you apply each fertilizer to 10 plants and record their yield. Additionally, you record the yield of ten plants that did not receive either fertilizer. This data is organized in R’s `PlantGrowth` data set.
+
+#### (i) Determine if there is a significant difference in yield between plants that received fertilizer 1 (`trt1`) and fertilizer 2 (`trt2`). First, state your test statistic. Then, use the permutation test to construct the test statistic distribution; consider 1000 random permutations of the responses. Then, plot a histogram of the test statistic distribution. Finally, compute the p-value and make a conclusion. NOTE: Do NOT use responses from plants that were in the control group. For this part, we are only applying the permutation test for the treated plants under either fertilizer.
+
+Test statistic is the difference in means of the plant weight
+
+```{r}
+
+data("PlantGrowth")
+plants = PlantGrowth %>% filter(group %in% c("trt1", "trt2"))
+
+## compute test statistic
+ts = mean(plants$weight[1:10]) - mean(plants$weight[11:20])
+
+
+## permute responses and record simulated test statistics
+
+rts = rep(NA,1000)
+for(i in 1:1000){
+	plants$resamp = sample(c("A","B"), 20, replace = TRUE)
+	rts[i] = mean(plants$weight[which(plants$resamp == "A")]) - mean(plants$weight[which(plants$resamp == "B")])
+}
+
+## plot a histogram to obtain test statistic distribution
+hist(rts, breaks = 20)
+abline(v = ts, col = "red")
+
+## compute p-value based on simulations
+2*length(which(rts <= ts))/1000
+
+```
+
+The p value is 0.006
+
+This analysis tests the outcome of treatment with fertilizer 1 and 2. With a \< 0.05 considered statistically significant, there is a strong likelihood that there is another reason causing the results that rules out the null hypothesis.
+
+#### (ii) You may be eager to conclude that one fertilizer is better than the other and should be adopted by tea farmers. However, now we need to check that the better fertilizer improves yield over non-fertilized plants. Execute the same permutation test that you conducted in (i) on the control group (non-fertilized plants) and the group of plants that were treated with the better fertilizer. NOTE: Once again, do NOT use responses from the group that we're NOT comparing. You should still only have 20 responses that you permute.
+
+```{r}
+
+data("PlantGrowth")
+plants2 = PlantGrowth %>% filter(group %in% c("ctrl", "trt2"))
+
+## compute test statistic
+ts = mean(plants2$weight[1:10]) - mean(plants2$weight[11:20])
+
+
+## permute responses and record simulated test statistics
+set.seed(702)
+rts = rep(NA,1000)
+for(i in 1:1000){
+	plants2$resamp = sample(c("A","B"), 20, replace = TRUE)
+	rts[i] = mean(plants2$weight[which(plants2$resamp == "A")]) - mean(plants$weight[which(plants2$resamp == "B")])
+}
+
+## plot a histogram to obtain test statistic distribution
+hist(rts, breaks = 20)
+abline(v = ts, col = "red")
+
+## compute p-value based on simulations
+2*length(which(rts <= ts))/1000
+```
+
+P value = 0.002 Now testing the control group with with fertilizer 2, the p value is smaller, giving more evidence that there is a strong likelihood that another occurrence rules out the null hypothesis.
+
+# Question 3 - We're Onto You, Hank...
+
+After the last game night with your friends and Hank, you realize that you need to collect some data on Hank's dice rolls. Throughout the night, you record his rolls of a 6-sided die. Once you get home, you look at the data you've collected, ready to answer once and for all if Hank is a cheater.
+
+```{r echo = FALSE, results = 'asis'}
+dieface = 1:6
+rollfreq = c(10, 11, 13, 11, 12, 27)
+table.dataset = rbind(dieface, rollfreq)
+rownames(table.dataset) = c("Die Face", "Roll Frequency")
+kable(table.dataset)
+```
+
+#### (i) We will conduct a goodness-of-fit test to determine if Hank is using a fair 6-sided die (i.e., that all sides should show up with equiprobability). State your null hypothesis and compute your test statistic.
+
+The null hypothesis is that hanks rolls were made completely by chance.
+
+```{r}
+n_tot = 100
+p = rep(1/6, 6)
+exp = n_tot * p
+
+observedrolls = c(10, 11, 13, 11, 12, 27)
+obs_test_stat = sum((observedrolls - exp)^2/exp)
+obs_test_stat
+```
+
+#### (ii) Run 10,000 simulations of your test statistic under the null hypothesis. Plot a histogram of this simulated sampling distribution.
+
+```{r}
+
+rm(list=ls())
+
+#lesson
+n_tot = 100
+p = rep(1/6,6)
+exp_candy_cols = n_tot * p
+n_sims = 10000 
+obs_test_stat <- 15.04 #from before
+par(mfrow=c(2,1))
+
+
+sim_test_stat = rep(NA, n_sims)
+for(ii in 1:n_sims)
+  {
+	simrolls = tabulate(sample(c(1:6), size=n_tot, prob = p, replace=TRUE), nbins=6)
+	sim_test_stat[ii] = sum((simrolls - exp_candy_cols)^2/exp_candy_cols)
+	}
+hist(sim_test_stat, breaks=20, main="Null Distribution")
+
+
+
+
+```
+
+#### (iii) Draw a vertical line at the observed test statistic. Compute the p-value and state your conclusion.
+
+```{r}
+
+hist(sim_test_stat, breaks=20, main="Null Distribution")
+
+
+abline(v=obs_test_stat,col="red",lwd=2)
+p_val = length(which(simrolls>obs_test_stat))/n_sims
+p_val
+```
+
+Given a p-value of 0.004, there is very strong likelihood that there is evidence ro reject the null hypothesis.
+
+# Question 4 - mxolxv zrxog ihdu xv
+
+As you leave your SDS 315 lecture, a hooded figure approaches, wielding a manila envelope. Why has this become a common occurrence? They say that they are here on behalf of the CIA, recently rebranded from the Causal Inference Agency to the Cryptographic Informatics Agency. Your mission, should you choose to accept it, requires you to decrypt a message, which seems to have been encrypted with a Caesar cipher. The encrypted message can be found in the manila envelope (or in the "cnp.txt" file on your Canvas assignment page). As they hand you the envelope and drift away, you think of the most efficient method to decrypt the message: "There are 26 possible shifts. Maybe, if I can compute $\chi^2$ test statistics for each possible shift, using the expected letter frequencies, then I'll be able to find the most likely Caesar cipher shift."
+
+```{r echo = FALSE, results = 'asis'}
+LETTERS = LETTERS # a built-in R vector
+letterfreq = c(8.2,1.5,2.8,4.3,12.7,2.2,2.0,6.1,7.0,0.2,0.8,4.0,2.4,6.7,7.5,1.9,0.1,6.0,6.3,9.1,2.8,1.0,2.4,0.2,2.0,0.1)/100
+table.dataset = rbind(LETTERS, letterfreq)
+rownames(table.dataset) = c("Letters", "Letter Frequency")
+kable(table.dataset)
+```
+
+#### (i) For each of the 26 possible shifts, compute the $\chi^2$ test statistic. HINT: Use `read.delim()` to read in `.txt` files, `strsplit()` to turn a long string into a character vector, and `table()` to get the frequency of each letter in the character vector. For this question, you do not actually need to shift the letters; you can simply shift the frequencies of the letters when computing the $\chi^2$ statistic.
+
+```{r}
+
+string <- readLines('cnp.txt')
+
+13169 + 993
+vector <- as.data.frame(table(strsplit(string, "")))
+
+
+letterfreq = c(8.2,1.5,2.8,4.3,12.7,2.2,2.0,6.1,7.0,0.2,0.8,4.0,2.4,6.7,7.5,1.9,0.1,6.0,6.3,9.1,2.8,1.0,2.4,0.2,2.0,0.1)/100
+expected <- letterfreq*14162
+
+observed <- vector$Freq
+
+
+
+
+}
+
+
+```
+
+#### (ii) Using your computed $\chi^2$ statistics in (i), which shift should we use to decrypt the message?
+
+#### (iii) What is your decrypted message? Do you believe that you cracked the code?
+
+# Question 5 - Need for Speed
+
+In this question, we will visualize the central limit theorem through an exploration of the `cars` data set from the `car` R package.
+
+#### (i) For $M=1000$ simulations, compute the mean of the speed of a random sample of $N$ cars. Then, plot a histogram of the simulated means. Do this for $N=5,10,25$.
+
+```{r}
+data('cars')
+
+
+speeds1 = rep(NA,1000)
+for(i in 1:1000){
+	speeds1[i] = mean(sample(cars$speed, 5, replace = TRUE))
+}
+ggplot() + geom_histogram(aes(x=speeds1))
+
+
+speeds2 = rep(NA,1000)
+for(i in 1:1000){
+	speeds2[i] = mean(sample(cars$speed, 10, replace = TRUE))
+}
+ggplot() + geom_histogram(aes(x=speeds2))
+
+
+speeds3 = rep(NA,1000)
+for(i in 1:1000){
+	speeds3[i] = mean(sample(cars$speed, 25, replace = TRUE))
+}
+ggplot() + geom_histogram(aes(x=speeds3)) 
+
+```
+
+#### (ii) What do you notice as $N$ increases? Why does this happen?
+
+As N increases, the graph begins to better resemble a normal distribution.
+
+# Question 6 - p-value
+
+Repeat the definition of p-values every morning for the rest of the semester and ponder its true meaning:
+
+"P-value: the probability of witnessing a test statistic as wild and wacky as what you've observed in your sample, assuming the null hypothesis is throwing a party."
