@@ -1,0 +1,248 @@
+---
+title: "SDS 315 - Homework 5"
+author: "(Group Number: Student Names)"
+date: "2026-04-09"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+opts_chunk$set(tidy.opts=list(width.cutoff=40),tidy=TRUE)
+library(ggplot2)
+library(tidyverse)
+library(ggpubr)
+library(mosaic)
+library(effectsize)
+```
+
+This homework should be submitted using a .Rmd file and .pdf/.html file. Show all of your code.
+
+# Question 1
+
+Answer the following questions about the `NHANES_sleep.csv` data set using the CLT and de Moivre's equation (use the formula explicitly to calculate standard errors). 
+
+#### (i) Construct a 95% confidence interval for the differences in average sleep hours between men and women. If you were originally interested to test whether the average sleep hours vary significantly between men and women, what conclusion will you arrive at based on your CI?
+
+```{r}
+# Answer:
+NHANES_sleep <- read.csv('NHANES_sleep.csv')
+men <- NHANES_sleep %>% filter(Gender == "male")
+women <- NHANES_sleep %>% filter(Gender == "female")
+
+xbar_m <- mean(men$SleepHrsNight, na.rm = TRUE)
+xbar_w <- mean(women$SleepHrsNight, na.rm = TRUE)
+
+s_m <- sd(men$SleepHrsNight, na.rm = TRUE)
+s_w <- sd(women$SleepHrsNight, na.rm = TRUE)
+
+n_m <- sum(!is.na(men$SleepHrsNight))
+n_w <- sum(!is.na(women$SleepHrsNight))
+
+SE <- sqrt((s_m^2 / n_m) + (s_w^2 / n_w))
+
+diff <- xbar_m - xbar_w
+
+CI <- diff + c(-1.96, 1.96) * SE
+CI
+```
+
+###### Since the 95% CI does not include 0, we reject the null hypothesis and conclude that average number of hours of sleep does differ between men and women.
+
+#### (ii) Next, construct a 95% confidence interval for the differences in the proportion of serious smokers (use the Smoke100 variable here) between the depression groups (use the DepressedAny variable defined below). If you were originally interested to test whether the proportions of smokers vary significantly between the two depression groups, what conclusion will you arrive at based on your CI?
+
+```{r}
+# Answer:
+NHANES_sleep = NHANES_sleep %>% mutate(DepressedAny = ifelse(Depressed != "None", yes=TRUE, no=FALSE))
+dep <- NHANES_sleep %>% filter(DepressedAny == TRUE)
+nodep <- NHANES_sleep %>% filter(DepressedAny == FALSE)
+
+p1 <- mean(dep$Smoke100 == "Yes", na.rm = TRUE)
+p2 <- mean(nodep$Smoke100 == "Yes", na.rm = TRUE)
+
+n1 <- sum(!is.na(dep$Smoke100))
+n2 <- sum(!is.na(nodep$Smoke100))
+
+SE <- sqrt((p1*(1-p1)/n1) + (p2*(1-p2)/n2))
+
+diff <- p1 - p2
+
+CI <- diff + c(-1.96, 1.96) * SE
+CI
+```
+
+###### Since the 95% CI does not include 0, we reject the null hypothesis and conclude that smoking rates do differ between men and women.
+
+
+
+# Question 2 - Need for More Speed
+
+In this question, we will explore and analyze the `cars` data set from the `car` R package again.
+
+#### (i) Create a scatterplot of speed vs distance. Fit a regression line between speed of cars and the distance it takes to stop. Plot the fitted regression line superimposed on the scatterplot. Summarize the results in words. Hint: Use R's `lm()` and `summary()` functions. 
+
+```{r}
+data(cars)
+
+plot(cars$speed, cars$dist,
+     xlab = "Speed", ylab = "Stopping Distance",
+     main = "Speed vs Stopping Distance")
+
+model <- lm(dist ~ speed, data = cars)
+abline(model, col = "blue")
+
+summary(model)
+
+```
+
+##### The relationship between car speed and stopping distance is positive, meaning that faster cars need a more distance to stop. THe p-value for the coefficient of speed is also incredibly small, indicating a strong relationship.
+
+#### (ii) Draw a histogram of the residuals obtained in part (i). What is the average value of the residuals (report after rounding up to three decimal places)? What are the RMSE and R-squared values of your fit? How would you interpret the R-squared (in words) in the context of the problem?
+
+```{r}
+res <- residuals(model)
+
+hist(res, main = "Residuals Histogram")
+
+mean(res)
+
+# RMSE
+rmse <- sqrt(mean(res^2))
+
+# R-squared
+summary(model)$r.squared
+
+```
+
+###### The average value of the residuals is approximately zero. The RMSE and R-squared values of this fit are 15.069 and 0.651 respectively. As R-squared equals 0.651, then 65.1% of variation in stopping distance is explained by speed.
+
+#### (iii) What are the predicted stopping distances for an 'average' car with speeds 50mph, 30mph, and 0mph? Discuss. 
+
+```{r}
+predict(model, newdata = data.frame(speed = c(50, 30, 0)))
+
+```
+
+###### The predicted stopping distances for an 'average' car with speeds 50mph, 30mph, and 0mph are 179.041, 100.393, and -17.579 (which would just be zero, as distance in this case cannot be negative).
+
+#### (iv) Calculate 95% confidence intervals for the regression coefficients from your output in part (i). 
+
+```{r}
+confint(model, level = 0.95)
+
+```
+
+#### (v) Obtain a bootstrapped sample of size $M=10000$ for the regression coefficients for your regression model. Plot histograms of the regression coefficients obtained from the bootstrap resamples. Compute 95% confidence intervals for the regression coefficients, this time based on the bootstrap distribution of the regression parameter estimates. Compare with your answers in part (iv). Hint: Use R's `mosaic` library and a combination of the `do()` and `lm()` functions.
+
+```{r}
+boot <- do(10000) * lm(dist ~ speed, data = resample(cars))
+
+hist(boot$speed)
+hist(boot$Intercept)
+
+quantile(boot$speed, c(0.025, 0.975))
+quantile(boot$Intercept, c(0.025, 0.975))
+
+```
+
+###### The new confidence interval is approximately similar to the previous confidence interval, with only some decimals off.
+
+
+
+# Question 3 - I'm All About that Baseline
+
+For each of the following scenarios, pick a baseline and report every offset.
+
+(a) Papa bear, mama bear, and baby bear eat their porridge at 133$^\circ$, 80$^\circ$, and 103$^\circ$, respectively.
+
+###### Baseline = Mama Bear. Papa: +53, Mama: 0, Baby: +23
+
+(b) League of Legends players, FIFA players, and Call of Duty players rage quit their video games in an average of 15 minutes, 27 minutes, and 3 minutes, respectively.
+
+###### Baseline = CoD. LoL: +12, FIFA: +24
+
+(c) Professor Sarkar and the class TA engage in one of their usual post-class rap battles. Professor Sarkar spits 30 bars per minute, while the TA spits 21.
+
+###### Baseline = TA. Sarkar: +9
+
+
+
+
+# Question 4 - Carbon Dioxide Uptake
+
+*Echinochloa crus-galli*, a species of wild grass, is known as one of the world's worst weeds. It reduces crop yields and causes forage crops to fail by reducing up to 80\% of the available soil nitrogen. In order to see the bright side of *Ech. crus-galli*, agronomists analyzed its ability to absorb carbon dioxide. They recorded the amount of ambient CO2 (`conc`) and CO2 uptake rates (`uptake`) for each plant, which are identified with `Plant`. Each plant was located in one of two locations (`Type`) and received one of two treatments (`Treatment`). The data is conveniently located in R's `CO2` data set.
+
+#### (i) Regress `uptake` on `conc` and `Treatment`. What is the estimated treatment effect resulting from this regression?
+
+```{r}
+model1 <- lm(uptake ~ conc + Treatment, data = CO2)
+summary(model1)
+```
+
+###### The estimated treatment effect is -6.860.
+
+
+#### (ii) Are you satisfied with the regression in (i)? Why or why not? *Hint*: Don't be satisfied.
+
+###### I am not satisfied with the regression because it does not account for interaction between conc and Treatmentchilled, and it assumes that both treatments have the same slope. 
+
+
+#### (iii) Add an interaction between `conc` and `Treatment` to your regression in (i). What is the estimated treatment effect now? Do you want to keep this interaction in your model?
+
+```{r}
+model2 <- lm(uptake ~ conc * Treatment, data = CO2)
+summary(model2)
+```
+
+######  The estimated treatment effect now is -5.038. I don't want to keep the interaction in this model as the interaction is not very significant (p-value over 0.05).
+
+
+#### (iv) Repeat the regression in (iii) independently for each location. What do you notice between the two regressions? *NOTE*: If you decided to keep `conc:Treatment` in (iii), use that for the regressions here.
+
+```{r}
+model_Q <- lm(uptake ~ conc + Treatment, data = subset(CO2, Type == "Quebec"))
+summary(model_Q)
+model_M <- lm(uptake ~ conc + Treatment, data = subset(CO2, Type == "Mississippi"))
+summary(model_M)
+```
+
+###### Between the two regressions, their slopes seem to be significantly different, meaning that environment matters.
+
+
+#### (v) Conduct an analysis of variance on the two regressions executed in (iv). Explain why ANOVA may or may not be applicable for this experiment. At which location does the Treatment account for more of the total variation in CO2 uptake rates?
+
+```{r}
+anova(model_Q)
+anova(model_M)
+```
+
+######  ANOVA might not be applicable for this experiment due to repeated measurements of the same plant (ANOVA assumes all samples are independent from one another). Also, conc is a continuous variable, and ANOVA is usually better with categorical variables. Treatment accounts for more of the total variation in CO2 uptake rates in Mississippi.
+
+
+#### (vi) Regress `uptake` on `conc`, `Treatment`, and `Type` (main effects only, NO interactions). Which independent variables are statistically significant at the 0.05 level of significance?
+
+```{r}
+model3 <- lm(uptake ~ conc + Treatment + Type, data = CO2)
+summary(model3)
+```
+
+######  All three variables of conc, Treatment, and Type are statistically significant at the significance level of 0.05.
+
+
+#### (vii) Your objective is to determine the treatment effect of chilling *Ech. crus-galli* on CO2 uptake rates. Which of the above regressions do you feel best determines the treatment effect? What is wrong with the regression you chose?
+
+######  The last model that included concentration, treatment, and type best estimates the treatment effect. However, it doesn't account for repeated measurements on individual plants, which may make ANOVA not applicable because it violates the independence assumption.
+
+
+#### (viii) Conduct one final regression to determine the treatment effect of chilling *Ech. crus-galli* on CO2 uptake rates. Construct your model using the guidelines provided in lectures 20 and 21. Explain how you constructed your linear regression model. What is your estimated treatment effect?
+
+```{r}
+final_model <- lm(uptake ~ conc * Treatment * Type, data = CO2)
+summary(final_model)
+```
+
+######  I constructed this model after trying many combinations of adding a variable and/or adding its interaction with another variable. In the end, I found that interaction between all three variables yielded the highest adjusted R-squared value, meaning that this model had the highest predictive power of the models that I've tried. My estimated treatment effect is -4.164.
+
